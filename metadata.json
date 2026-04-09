@@ -1,0 +1,5 @@
+{
+  "name": "CalculaSAT",
+  "description": "Plataforma SaaS para calcular y gestionar impuestos (ISR) en México para RESICO, Actividad Empresarial y Sueldos.",
+  "requestFramePermissions": []
+}

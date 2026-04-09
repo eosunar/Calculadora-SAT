@@ -1,0 +1,40 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User profile and subscription status",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "displayName": { "type": "string" },
+        "isPro": { "type": "boolean" },
+        "regime": { "type": "string", "enum": ["RESICO", "ACTIVIDAD_EMPRESARIAL", "SUELDOS"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "isPro", "createdAt"]
+    },
+    "CalculationHistory": {
+      "title": "CalculationHistory",
+      "description": "History of tax calculations performed by the user",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "input": { "type": "object" },
+        "result": { "type": "object" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "input", "result", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "User profile documents"
+    },
+    "/calculations/{calcId}": {
+      "schema": "CalculationHistory",
+      "description": "Stored tax calculations"
+    }
+  }
+}
