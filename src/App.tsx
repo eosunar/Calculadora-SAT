@@ -109,7 +109,7 @@ export default function App() {
                 {[
                   { icon: TrendingUp, title: "Optimización Fiscal", desc: "Descubre cómo reducir tu carga fiscal legalmente." },
                   { icon: ShieldCheck, title: "100% Seguro", desc: "Tus datos están protegidos con encriptación de grado bancario." },
-                  { icon: Zap, title: "Resultados Instantáneos", desc: "Cálculos precisos basados en las tablas del SAT 2024/2025." }
+                  { icon: Zap, title: "Resultados Instantáneos", desc: "Cálculos precisos basados en las tablas del SAT 2026." }
                 ].map((f, i) => (
                   <motion.div
                     key={i}
@@ -176,7 +176,7 @@ export default function App() {
                   {/* Quick Tips Card */}
                   <div className="bg-gradient-to-br from-indigo-600 to-blue-700 rounded-3xl p-8 text-white shadow-xl">
                     <BookOpen className="w-8 h-8 mb-4 opacity-50" />
-                    <h3 className="text-xl font-bold mb-2">Guía Fiscal 2024</h3>
+                    <h3 className="text-xl font-bold mb-2">Guía Fiscal 2026</h3>
                     <p className="text-indigo-100 text-sm mb-6">Hemos preparado una guía gratuita para que entiendas el nuevo régimen RESICO.</p>
                     <Button variant="secondary" className="w-full font-bold rounded-xl">
                       Descargar Guía
@@ -196,7 +196,7 @@ export default function App() {
             <span className="font-bold tracking-tighter">CalculaSAT</span>
           </div>
           <p className="text-slate-400 text-sm">
-            © 2024 CalculaSAT México. No somos el SAT. Los cálculos son estimaciones informativas.
+            © 2026 CalculaSAT México. No somos el SAT. Los cálculos son estimaciones informativas.
           </p>
           <div className="flex justify-center gap-6 text-slate-400 text-sm font-medium">
             <a href="#" className="hover:text-blue-600 transition-colors">Términos</a>

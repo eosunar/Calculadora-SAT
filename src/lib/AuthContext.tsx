@@ -21,7 +21,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let unsubProfile: (() => void) | null = null;
+
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      // Unsubscribe from previous profile listener if it exists
+      if (unsubProfile) {
+        unsubProfile();
+        unsubProfile = null;
+      }
+
       setUser(firebaseUser);
       
       if (firebaseUser) {
@@ -29,7 +37,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const userDocRef = doc(db, 'users', firebaseUser.uid);
         
         // Use onSnapshot for real-time profile updates
-        const unsubProfile = onSnapshot(userDocRef, (docSnap) => {
+        unsubProfile = onSnapshot(userDocRef, (docSnap) => {
           if (docSnap.exists()) {
             setProfile(docSnap.data() as UserProfile);
           } else {
@@ -43,20 +51,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setDoc(userDocRef, newProfile).catch(err => handleFirestoreError(err, OperationType.WRITE, `users/${firebaseUser.uid}`));
             setProfile(newProfile);
           }
-          setLoading(false); // Set loading false after profile is fetched
+          setLoading(false);
         }, (err) => {
+          // Ignore permission errors if they happen during logout (auth.currentUser becomes null)
+          if (err.code === 'permission-denied' && !auth.currentUser) {
+            return;
+          }
           handleFirestoreError(err, OperationType.GET, `users/${firebaseUser.uid}`);
-          setLoading(false); // Set loading false even on error
+          setLoading(false);
         });
-
-        return () => unsubProfile();
       } else {
         setProfile(null);
-        setLoading(false); // Set loading false if no user
+        setLoading(false);
       }
     });
 
-    return () => unsubscribe();
+    return () => {
+      unsubscribe();
+      if (unsubProfile) unsubProfile();
+    };
   }, []);
 
   const login = async () => {
@@ -69,7 +82,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } else if (error.code === 'auth/cancelled-popup-request') {
         // Ignore or handle
       } else {
-        toast.error('Error al iniciar sesión. Intenta de nuevo.');
+        toast.error(`Error al iniciar sesión: ${error.code || error.message || 'Error desconocido'}`);
         console.error("Login failed", error);
       }
     }

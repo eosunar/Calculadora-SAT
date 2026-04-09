@@ -107,7 +107,11 @@ export function TaxCalculator() {
                           placeholder="0.00" 
                           type="number"
                           {...field} 
-                          onChange={(e) => field.onChange(Number(e.target.value))}
+                          value={field.value === 0 ? '' : field.value}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            field.onChange(val === '' ? 0 : Number(val));
+                          }}
                         />
                       </div>
                     </FormControl>
@@ -129,7 +133,11 @@ export function TaxCalculator() {
                           placeholder="0.00" 
                           type="number"
                           {...field} 
-                          onChange={(e) => field.onChange(Number(e.target.value))}
+                          value={field.value === 0 ? '' : field.value}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            field.onChange(val === '' ? 0 : Number(val));
+                          }}
                         />
                       </div>
                     </FormControl>

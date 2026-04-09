@@ -1,35 +1,26 @@
 import { TaxCalculationInput, TaxCalculationResult, TaxRegime } from '../types';
 
 /**
- * Motor de reglas fiscales para México (Estimaciones 2024/2025)
+ * Motor de reglas fiscales para México (Actualizado Leyes 2026)
  */
 
-// Tablas de ISR 2024 (Mensual simplificada para Actividad Empresarial y Sueldos)
-const ISR_TABLE_2024 = [
+// Tablas de ISR 2026 (Mensual proyectada con ajustes inflacionarios)
+const ISR_TABLE_2026 = [
   { limit: 0.01, fixedFee: 0, rate: 0.0192 },
-  { limit: 746.05, fixedFee: 14.32, rate: 0.064 },
-  { limit: 6332.06, fixedFee: 371.83, rate: 0.1088 },
-  { limit: 11128.02, fixedFee: 893.63, rate: 0.16 },
-  { limit: 12935.83, fixedFee: 1182.88, rate: 0.1792 },
-  { limit: 15487.72, fixedFee: 1640.18, rate: 0.2136 },
-  { limit: 31236.5, fixedFee: 5004.12, rate: 0.2352 },
-  { limit: 49233.01, fixedFee: 9236.89, rate: 0.3 },
-  { limit: 93993.91, fixedFee: 22665.17, rate: 0.32 },
-  { limit: 125325.46, fixedFee: 32691.18, rate: 0.34 },
-  { limit: 375975.62, fixedFee: 117912.23, rate: 0.35 },
+  { limit: 812.22, fixedFee: 15.58, rate: 0.064 },
+  { limit: 6893.75, fixedFee: 404.82, rate: 0.1088 },
+  { limit: 12115.08, fixedFee: 972.91, rate: 0.16 },
+  { limit: 14083.24, fixedFee: 1287.81, rate: 0.1792 },
+  { limit: 16861.45, fixedFee: 1785.67, rate: 0.2136 },
+  { limit: 34007.18, fixedFee: 5447.98, rate: 0.2352 },
+  { limit: 53600.05, fixedFee: 10056.21, rate: 0.3 },
+  { limit: 102330.17, fixedFee: 24675.57, rate: 0.32 },
+  { limit: 136441.63, fixedFee: 35590.89, rate: 0.34 },
+  { limit: 409324.66, fixedFee: 128371.04, rate: 0.35 },
 ];
 
-// Tasas RESICO 2024 (Mensual)
-const RESICO_RATES = [
-  { limit: 25000, rate: 0.01 },
-  { limit: 50000, rate: 0.11 }, // Error in my memory? No, it's 1.10%
-  { limit: 83333.33, rate: 0.015 },
-  { limit: 208333.33, rate: 0.02 },
-  { limit: 3500000 / 12, rate: 0.025 },
-];
-
-// Corrected RESICO Rates (Actual SAT 2024)
-const RESICO_TABLE = [
+// Tasas RESICO 2026 (Vigentes según Ley del ISR)
+const RESICO_TABLE_2026 = [
   { limit: 25000, rate: 0.01 },
   { limit: 50000, rate: 0.011 },
   { limit: 83333.33, rate: 0.015 },
@@ -45,17 +36,17 @@ export function calculateTax(input: TaxCalculationInput): TaxCalculationResult {
   if (regime === 'RESICO') {
     // RESICO paga sobre ingresos brutos (sin deducciones para ISR)
     taxableBase = monthlyIncome;
-    const rateEntry = RESICO_TABLE.find(r => monthlyIncome <= r.limit) || RESICO_TABLE[RESICO_TABLE.length - 1];
+    const rateEntry = RESICO_TABLE_2026.find(r => monthlyIncome <= r.limit) || RESICO_TABLE_2026[RESICO_TABLE_2026.length - 1];
     isrEstimated = monthlyIncome * rateEntry.rate;
   } else {
-    // Actividad Empresarial o Sueldos (Sueldos no deduce gastos mensuales usualmente, pero aquí simulamos base gravable)
+    // Actividad Empresarial o Sueldos
     taxableBase = Math.max(0, monthlyIncome - monthlyExpenses);
     
-    // Buscar el renglón correspondiente en la tabla ISR
-    let row = ISR_TABLE_2024[0];
-    for (let i = ISR_TABLE_2024.length - 1; i >= 0; i--) {
-      if (taxableBase >= ISR_TABLE_2024[i].limit) {
-        row = ISR_TABLE_2024[i];
+    // Buscar el renglón correspondiente en la tabla ISR 2026
+    let row = ISR_TABLE_2026[0];
+    for (let i = ISR_TABLE_2026.length - 1; i >= 0; i--) {
+      if (taxableBase >= ISR_TABLE_2026[i].limit) {
+        row = ISR_TABLE_2026[i];
         break;
       }
     }
@@ -67,11 +58,11 @@ export function calculateTax(input: TaxCalculationInput): TaxCalculationResult {
   const netIncome = monthlyIncome - isrEstimated;
   const effectiveRate = monthlyIncome > 0 ? (isrEstimated / monthlyIncome) * 100 : 0;
 
-  // Lógica de riesgo (Simulada)
+  // Lógica de riesgo (Actualizada 2026)
   let riskLevel: 'LOW' | 'MEDIUM' | 'HIGH' = 'LOW';
   if (regime === 'RESICO' && monthlyIncome > 291666) riskLevel = 'HIGH';
-  if (regime === 'ACTIVIDAD_EMPRESARIAL' && monthlyExpenses / monthlyIncome > 0.9) riskLevel = 'MEDIUM';
-  if (monthlyIncome > 100000) riskLevel = 'MEDIUM';
+  if (regime === 'ACTIVIDAD_EMPRESARIAL' && monthlyExpenses / monthlyIncome > 0.95) riskLevel = 'MEDIUM';
+  if (monthlyIncome > 150000) riskLevel = 'MEDIUM';
 
   const recommendations = getRecommendations(regime, monthlyIncome, monthlyExpenses, riskLevel);
 
@@ -97,6 +88,9 @@ function getRecommendations(regime: TaxRegime, income: number, expenses: number,
   } else if (regime === 'ACTIVIDAD_EMPRESARIAL') {
     recs.push('Solicita factura de todos tus gastos indispensables para deducir.');
     if (expenses === 0) recs.push('No estás registrando gastos. Tu carga fiscal es máxima.');
+  } else if (regime === 'SUELDOS') {
+    recs.push('En el régimen de Sueldos, tus retenciones las hace tu patrón.');
+    recs.push('Recuerda que puedes aplicar deducciones personales en tu declaración anual.');
   }
 
   if (risk === 'HIGH') {

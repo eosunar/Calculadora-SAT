@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { db, OperationType, handleFirestoreError } from '../lib/firebase';
+import { db, auth, OperationType, handleFirestoreError } from '../lib/firebase';
 import { collection, query, where, orderBy, onSnapshot, deleteDoc, doc } from 'firebase/firestore';
 import { useAuth } from '../lib/AuthContext';
 import { CalculationHistory } from '../types';
@@ -30,6 +30,9 @@ export function CalculationHistoryList() {
       })) as CalculationHistory[];
       setHistory(docs);
     }, (err) => {
+      if (err.code === 'permission-denied' && !auth.currentUser) {
+        return;
+      }
       handleFirestoreError(err, OperationType.LIST, 'calculations');
     });
 
